@@ -52,6 +52,11 @@ describe 'mocha-phantomjs', ->
     @runner done, [fileURL('uncaught-error')], (code, stout, sterr) ->
       expect(code).to.equal 1
 
+  it 'does not fail when an iframe is used', (done) ->
+    @runner done, [fileURL('iframe')], (code, stdout, stderr) ->
+      expect(stdout).to.not.match /Failed to load the page\./m
+      expect(code).to.equal 0
+
   describe 'spec', ->
 
     passRegExp   = (n) -> ///\u001b\[32m\s\s[✔✓]\u001b\[0m\u001b\[90m\spasses\s#{n}///

@@ -43,17 +43,14 @@ class Reporter
     phantom.exit @page.evaluate -> mochaPhantomJS.failures
 
   initPage: ->
-
     @page = webpage.create
       settings: @config.settings
-
     @page.customHeaders = @config.headers if @config.headers
     for name, value of @config.cookies
       @page.addCookie
         name: name
         value: value
     @page.viewportSize = @config.viewportSize if @config.viewportSize
-
     @page.onConsoleMessage = (msg) -> console.log msg
     @page.onInitialized = =>
       @page.evaluate ->
@@ -78,6 +75,7 @@ class Reporter
         )
       ).join('\n\t') + '\n'
     @page.onLoadFinished = (status) =>
+      @page.onLoadFinished = ->
       @onLoadFailed() if status isnt 'success'
       @waitForInitMocha()
     @page.onCallback = (data) =>
@@ -131,9 +129,6 @@ class Reporter
         cleanup = ->
           mochaPhantomJS.failures = mochaPhantomJS.runner.failures
           mochaPhantomJS.ended = true
-
-        # It's possible for the end event to occur prior to binding,
-        # this is most likely due to having zero tests but we don't want to hang.
         if mochaPhantomJS.runner?.stats?.end
           cleanup()
         else
@@ -152,7 +147,7 @@ class Spec extends Reporter
       console.log string
 
   customizeConsole: (options) ->
-    process.cursor.CRMatcher = /\s+◦\s\w/
+    process.cursor.CRMatcher = /\s+◦\s\S/
     process.cursor.CRCleaner = process.cursor.up + process.cursor.deleteLine
     origLog = console.log
     console.log = ->
@@ -273,5 +268,3 @@ if reporterKlass
 else
   console.log "Reporter class not implemented: #{reporterString}"
   phantom.exit 1
-
-
